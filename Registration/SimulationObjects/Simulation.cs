@@ -1,5 +1,6 @@
 ﻿using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,6 +33,7 @@ namespace Registration
             {
                 var body = ea.Body.ToArray();
                 string receivedMes = Encoding.UTF8.GetString(body);
+                Log.Information("Got from queue {Queue} message {Message}.", _rabbit.TicketsRQ, receivedMes);
 
                 using (JsonDocument jsonDoc = _parser.ParseMessage(receivedMes))
                 {
@@ -54,6 +56,7 @@ namespace Registration
             {
                 var body = ea.Body.ToArray();
                 string receivedMes = Encoding.UTF8.GetString(body);
+                Log.Information("Got from queue {Queue} message {Message}.", _rabbit.TicketsRQ, receivedMes);
 
                 using (JsonDocument jsonDoc = _parser.ParseMessage(receivedMes))
                 {
@@ -63,7 +66,8 @@ namespace Registration
                     string curTimeString = data.GetProperty(_parser.TimeKey).ToString();
                     DateTime curTime = DateTime.Parse(curTimeString);
 
-                    string registered = _flights[flightGuid].Register(passengerGuid, curTime);
+                    bool baggage;
+                    string registered = _flights[flightGuid].Register(passengerGuid, curTime, out baggage); // регистрация пассажиров
                     Dictionary<string, string> sendData = new Dictionary<string, string>();
                     sendData[_parser.PassengerKey] = passengerGuid;
                     sendData[_parser.ResponseKey] = registered;
@@ -74,12 +78,23 @@ namespace Registration
                     if (registered == _parser.SuccessValue)
                     {
                         // отправить в багажи и в автобус
+                        sendData = new Dictionary<string, string>();
+                        sendData[_parser.PassengerKey] = passengerGuid;
+                        sendData[_parser.RetardedFlightKey] = flightGuid;
+                        json = _parser.ParseDict(sendData);
+                        _rabbit.PutMessage(_rabbit.BusWQ, json);
+
+                        string baggageStr = baggage ? "1" : "0";
+                        sendData[_parser.BaggageKey] = baggageStr;
+                        json = _parser.ParseDict(sendData);
+                        _rabbit.PutMessage(_rabbit.BaggageWQ, json);
                     }
                 }
 
                 ticketsRQ.BasicAck(ea.DeliveryTag, false);
             };
 
+            Console.ReadLine();
         }
     }
 }

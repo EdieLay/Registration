@@ -25,7 +25,7 @@ namespace Registration
         public string PassengersWQ { get => "RegistrationToPassengers"; }
         public string PassengersRQ { get => "PassengersToRegistration"; }
         public string BaggageWQ { get => "RegistrationToBaggage"; }
-        public string FoodWQ { get => "RegistrationToFood"; }
+        public string BusWQ { get => "RegistrationToBus"; }
 
         private Rabbit()
         {

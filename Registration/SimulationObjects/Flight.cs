@@ -37,8 +37,9 @@ namespace Registration
             _parser = new Parser();
         }
 
-        public string Register(string guid, DateTime curTime)
+        public string Register(string guid, DateTime curTime, out bool baggage)
         {
+            baggage = false;
             if (curTime > _registrationEnd)
                 return _parser.FailValue;
             if (curTime < _registrationStart)
@@ -46,6 +47,7 @@ namespace Registration
             if (_passengers.ContainsKey(guid))
             {
                 _registered++;
+                baggage = _passengers[guid];
                 _passengers.Remove(guid);
                 return _parser.SuccessValue;
             }
@@ -56,6 +58,11 @@ namespace Registration
         {
             _passengers[guid] = baggage;
             _boughtTickets++;
+        }
+
+        public bool GetPassengerBaggage(string guid)
+        {
+            return _passengers[]
         }
     }
 }

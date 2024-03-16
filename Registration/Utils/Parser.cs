@@ -14,6 +14,7 @@ namespace Registration
         public string RetardedFlightKey { get => "Voyage"; }
         public string BaggageKey { get => "Baggage"; }
         public string FoodKey { get => "Food"; }
+        public string RegistrationKey { get => "Registration"; }
         public string ResponseKey { get => "Response"; }
         public string TimeKey { get => "Time"; }
         public string FailValue { get => "0"; }

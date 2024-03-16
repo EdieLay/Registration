@@ -20,12 +20,13 @@ namespace Registration
 
         // WQ - Write Queue - очередь для записи
         // RQ - Read Queue - очередь для считывания
-        public string TicketsWQ { get => "RegistrationToTickets"; }
-        public string TicketsRQ { get => "TicketsToRegistration"; }
+        public string TicketsWQ { get => "TicketsRequest"; }
+        public string TicketsRQ { get => "TicketsResponse"; }
         public string PassengersWQ { get => "RegistrationToPassengers"; }
         public string PassengersRQ { get => "PassengersToRegistration"; }
         public string BaggageWQ { get => "RegistrationToBaggage"; }
         public string BusWQ { get => "RegistrationToBus"; }
+        public string FlightsRQ { get => "FlightsToRegistration"; }
 
         private Rabbit()
         {
@@ -35,7 +36,7 @@ namespace Registration
                 HostName = "hawk-01.rmq.cloudamqp.com",
                 Password = "DEL8js4Cg76jY_2lAt19CjfY2saZT0yW",
                 UserName = "itojxdln",
-                ClientProvidedName = "Passenger Generator"
+                ClientProvidedName = "Registration"
             };
             while (true)
             {
@@ -52,6 +53,7 @@ namespace Registration
                     Thread.Sleep(TimeSpan.FromSeconds(retrySeconds));
                 }
             }
+            _parser = new Parser();
         }
 
         public static Rabbit GetInstance()

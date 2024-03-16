@@ -27,7 +27,6 @@ namespace Registration
         public void StartPolling()
         {
             IModel ticketsRQ = _rabbit.GetQueue(_rabbit.TicketsRQ); // обработка сообщений с покупкой билетов
-            ticketsRQ.BasicQos(0, 1, false);
             var ticketsConsumer = new EventingBasicConsumer(ticketsRQ);
             ticketsConsumer.Received += (ch, ea) =>
             {
@@ -55,11 +54,10 @@ namespace Registration
                 ticketsRQ.BasicAck(ea.DeliveryTag, false);
             };
             string ticketsConsumerTag = ticketsRQ.BasicConsume(_rabbit.TicketsRQ, false, ticketsConsumer);
-            ticketsRQ.BasicCancel(ticketsConsumerTag);
+            //ticketsRQ.BasicCancel(ticketsConsumerTag);
 
 
             IModel passengersRQ = _rabbit.GetQueue(_rabbit.PassengersRQ); // обработка сообщений от пассажиров на регистрацию
-            passengersRQ.BasicQos(0, 1, false);
             var passengersConsumer = new EventingBasicConsumer(passengersRQ);
             passengersConsumer.Received += (ch, ea) =>
             {
@@ -122,12 +120,11 @@ namespace Registration
                 }
             };
             string passengerConsumerTag = passengersRQ.BasicConsume(_rabbit.PassengersRQ, false, passengersConsumer);
-            passengersRQ.BasicCancel(passengerConsumerTag);
+            //passengersRQ.BasicCancel(passengerConsumerTag);
 
             IModel flightsRQ = _rabbit.GetQueue(_rabbit.FlightsRQ); // обработка сообщений по рейсам
-            flightsRQ.BasicQos(0, 1, false);
             var flightsConsumer = new EventingBasicConsumer(flightsRQ);
-            ticketsConsumer.Received += (ch, ea) =>
+            flightsConsumer.Received += (ch, ea) =>
             {
                 var body = ea.Body.ToArray();
                 string receivedMes = Encoding.UTF8.GetString(body);
@@ -142,6 +139,10 @@ namespace Registration
                         if (!_flights.ContainsKey(flightGuid)) // если в словаре нет этого рейса
                         {
                             _flights[flightGuid] = new Flight(flightGuid); // то инициализируем его, регистрация ещё не началась
+                            string registrationFlag = data.GetProperty(_parser.RegistrationKey).ToString();
+                            bool registrationStarted = registrationFlag == "1"; // если ключ == 1, то регистрация началась, в остальных случая закончилась
+                            if (registrationStarted)
+                                _flights[flightGuid].ChangeRegstrationState(registrationStarted);
                         }
                         else // если он есть в словаре, то проверяем ключ
                         {
@@ -160,7 +161,7 @@ namespace Registration
                 flightsRQ.BasicAck(ea.DeliveryTag, false);
             };
             string flightsConsumerTag = flightsRQ.BasicConsume(_rabbit.FlightsRQ, false, flightsConsumer);
-            flightsRQ.BasicCancel(flightsConsumerTag);
+            //flightsRQ.BasicCancel(flightsConsumerTag);
 
             Console.ReadLine();
         }

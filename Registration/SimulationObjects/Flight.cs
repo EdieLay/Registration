@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Serilog;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -42,16 +43,24 @@ namespace Registration
         {
             baggage = false;
             if (State == RegistrationState.RegistrationStopped) // если регистрация закончилась
+            {
+                Log.Information("Passenger {Passenger} is late for registration on flight {Flight}", guid, _guid);
                 return _parser.FailValue; // провал
+            }
             if (State == RegistrationState.RegistrationNotStarted) // если регитсрация не началась
+            {
+                Log.Information("Passenger {Passenger} is early for registration on flight {Flight}", guid, _guid);
                 return _parser.RegistrationNotStartedValue; // флаг о том, что не началась
+            }
             if (_passengers.ContainsKey(guid)) // если есть пассажир в списках на регистрацию
             {
                 _registered++; // кол-во зарегистрированных
                 baggage = _passengers[guid]; // флаг багажа
                 _passengers.Remove(guid); // удаляем пассажира, т.к. мы больше его не ждём на регистрацию
+                Log.Information("Passenger {Passenger} has registered on flight {Flight}", guid, _guid);
                 return _parser.SuccessValue; // успех, пассажир зарегистрировался
             }
+            Log.Information("Passenger {Passenger} is not in lists on flight {Flight}", guid, _guid);
             return _parser.FailValue; // если пассажира в списках нет, то провал
         }
 
@@ -61,12 +70,14 @@ namespace Registration
                 State = RegistrationState.RegistrationStarted;
             else
                 State = RegistrationState.RegistrationStopped;
+            Log.Information("State of flight {Flight} changed to {State}", _guid, State);
         }
 
         public void AddPassenger(string guid, bool baggage) // добавление пассажира
         {
             _passengers[guid] = baggage;
             _boughtTickets++;
+            Log.Information("Added passenger {Passenger} to flight {Flight}", guid, _guid);
         }
     }
 }

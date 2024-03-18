@@ -20,8 +20,7 @@ namespace Registration
 
         // WQ - Write Queue - очередь для записи
         // RQ - Read Queue - очередь для считывания
-        public string TicketsWQ { get => "TicketsRequest"; }
-        public string TicketsRQ { get => "TicketsResponse"; }
+        public string TicketsRQ { get => "TicketsToRegistration"; }
         public string PassengersWQ { get => "RegistrationToPassengers"; }
         public string PassengersRQ { get => "PassengersToRegistration"; }
         public string BaggageWQ { get => "RegistrationToBaggage"; }

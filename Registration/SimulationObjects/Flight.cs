@@ -10,9 +10,10 @@ namespace Registration
 {
     enum RegistrationState
     {
-        RegistrationNotStarted,
-        RegistrationStarted,
         RegistrationStopped,
+        RegistrationStarted,
+        RegistrationCancelled,
+        RegistrationNotStarted,
     }
     internal class Flight
     {

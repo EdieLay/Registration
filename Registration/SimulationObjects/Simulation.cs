@@ -43,7 +43,10 @@ namespace Registration
                         string flightGuid = data.GetProperty(_parser.FlightKey).ToString(); // айди полета
                         string baggageString = data.GetProperty(_parser.BaggageKey).ToString(); // флаг наличия багажа
                         bool baggage = baggageString == "1" ? true : false;
-                        _flights[flightGuid].AddPassenger(passengerGuid, baggage); // добавляем пассажира
+                        if (_flights.ContainsKey(flightGuid))
+                        {
+                            _flights[flightGuid].AddPassenger(passengerGuid, baggage); // добавляем пассажира
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -136,17 +139,16 @@ namespace Registration
                     {
                         JsonElement data = jsonDoc.RootElement;
                         string flightGuid = data.GetProperty(_parser.FlightKey).ToString();
+                        string registrationFlag = data.GetProperty(_parser.RegistrationKey).ToString();
                         if (!_flights.ContainsKey(flightGuid)) // если в словаре нет этого рейса
                         {
-                            _flights[flightGuid] = new Flight(flightGuid); // то инициализируем его, регистрация ещё не началась
-                            string registrationFlag = data.GetProperty(_parser.RegistrationKey).ToString();
-                            bool registrationStarted = registrationFlag == "1"; // если ключ == 1, то регистрация началась, в остальных случая закончилась
-                            if (registrationStarted)
-                                _flights[flightGuid].ChangeRegstrationState(registrationStarted);
+                            if (registrationFlag == "3")
+                            {
+                                _flights[flightGuid] = new Flight(flightGuid); // то инициализируем его, регистрация ещё не началась
+                            }
                         }
                         else // если он есть в словаре, то проверяем ключ
                         {
-                            string registrationFlag = data.GetProperty(_parser.RegistrationKey).ToString();
                             bool registrationStarted = registrationFlag == "1"; // если ключ == 1, то регистрация началась, в остальных случая закончилась
                             _flights[flightGuid].ChangeRegstrationState(registrationStarted);
                         }
